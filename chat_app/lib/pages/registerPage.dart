@@ -67,6 +67,7 @@ class _registerPageState extends State<registerPage> {
                   height: 20,
                 ),
                 customFormTextField(
+                  hidden: false,
                   hintText: "Email",
                   onchanged: (data) {
                     email = data;
@@ -76,6 +77,7 @@ class _registerPageState extends State<registerPage> {
                   height: 10,
                 ),
                 customFormTextField(
+                  hidden: true,
                   hintText: "Password",
                   onchanged: (data) {
                     password = data;
@@ -92,7 +94,8 @@ class _registerPageState extends State<registerPage> {
                       try {
                         await registerCode();
                         showSnakBar(context, "Success");
-                        Navigator.pushNamed(context, chatPage.id);
+                        Navigator.pushNamed(context, chatPage.id,
+                            arguments: email);
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'weak-password') {
                           showSnakBar(context, "Weak Password");

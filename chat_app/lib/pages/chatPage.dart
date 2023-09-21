@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:scholar_chat/constants.dart';
+import 'package:scholar_chat/models/messageModel.dart';
 import 'package:scholar_chat/widgets/customChatBubble.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class chatPage extends StatelessWidget {
-  const chatPage({super.key});
+  chatPage({super.key});
 
   static String id = "ChatPage";
 
+  final ScrollController _controller = ScrollController();
+  void _scrollDown() {
+    _controller.jumpTo(0);
+  }
+
   @override
   Widget build(BuildContext context) {
+    var email = ModalRoute.of(context)!.settings.arguments;
     CollectionReference message =
-        FirebaseFirestore.instance.collection('messages');
+        FirebaseFirestore.instance.collection(kMessagesCollections);
     TextEditingController controller = TextEditingController();
 
-    return FutureBuilder<QuerySnapshot>(
-        future: message.get(),
+    return StreamBuilder<QuerySnapshot>(
+        stream: message.orderBy(kCreatedAt, descending: true).snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            List<messageModel> messagesList = [];
+            for (int i = 0; i < snapshot.data!.docs.length; i++) {
+              messagesList.add(messageModel.fromJson(snapshot.data!.docs[i]));
+            }
             return Scaffold(
               appBar: AppBar(
                 title: Row(
@@ -26,7 +37,7 @@ class chatPage extends StatelessWidget {
                       kAppMainImage,
                       height: 50,
                     ),
-                    Text("Scholar Chat")
+                    Text("fu*k whatsapp")
                   ],
                   mainAxisAlignment: MainAxisAlignment.center,
                 ),
@@ -38,9 +49,19 @@ class chatPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: ListView.builder(
-                        itemCount: 5,
+                        reverse: true,
+                        controller: _controller,
+                        itemCount: messagesList.length,
                         itemBuilder: (BuildContext context, int index) {
-                          return customChatBubble();
+                          if (messagesList[index].id == email) {
+                            return customChatBubble(
+                              messageComing: messagesList[index],
+                            );
+                          } else {
+                            return customChatBubbleForFriend(
+                              messageComing: messagesList[index],
+                            );
+                          }
                         }),
                   ),
                   Padding(
@@ -48,8 +69,13 @@ class chatPage extends StatelessWidget {
                     child: TextField(
                       controller: controller,
                       onSubmitted: (data) {
-                        message.add({'message': data});
+                        message.add({
+                          KMessage: data,
+                          kCreatedAt: DateTime.now(),
+                          'id': email
+                        });
                         controller.clear();
+                        _scrollDown();
                       },
                       decoration: InputDecoration(
                         suffixIcon: Icon(

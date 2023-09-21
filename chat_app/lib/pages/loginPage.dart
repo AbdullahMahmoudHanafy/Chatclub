@@ -66,6 +66,7 @@ class _loginPageState extends State<loginPage> {
                   height: 20,
                 ),
                 customFormTextField(
+                  hidden: false,
                   hintText: "Email",
                   onchanged: (data) {
                     email = data;
@@ -75,6 +76,7 @@ class _loginPageState extends State<loginPage> {
                   height: 10,
                 ),
                 customFormTextField(
+                  hidden: true,
                   hintText: "Password",
                   onchanged: (data) {
                     password = data;
@@ -91,7 +93,8 @@ class _loginPageState extends State<loginPage> {
                       try {
                         await loginCode();
                         showSnakBar(context, "Success");
-                        Navigator.pushNamed(context, chatPage.id);
+                        Navigator.pushNamed(context, chatPage.id,
+                            arguments: email);
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'user-not-found') {
                           // ignore: use_build_context_synchronously
